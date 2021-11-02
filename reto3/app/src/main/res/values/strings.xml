@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">reto3</string>
+    <string name="first_human">You go first.</string>
+    <string name="turn_human">Your turn.</string>
+    <string name="turn_computer">Android\'s turn.</string>
+    <string name="result_tie">It\'s a tie.</string>
+    <string name="result_human_wins">You won!</string>
+    <string name="result_computer_wins">Android won!</string>
+    <string name="counter_won">Human: %1$d</string>
+    <string name="counter_tied">Tied: %1$d</string>
+    <string name="counter_lost">Android: %1$d</string>
+</resources>
