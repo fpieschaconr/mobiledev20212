@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">reto3</string>
+    <string name="app_name">Reto 4</string>
     <string name="first_human">You go first.</string>
     <string name="turn_human">Your turn.</string>
     <string name="turn_computer">Android\'s turn.</string>
@@ -9,4 +9,13 @@
     <string name="counter_won">Human: %1$d</string>
     <string name="counter_tied">Tied: %1$d</string>
     <string name="counter_lost">Android: %1$d</string>
+    <string name="difficulty_choose">Choose your difficulty</string>
+    <string name="difficulty_easy">Easy</string>
+    <string name="difficulty_harder">Hard</string>
+    <string name="difficulty_expert">Expert</string>
+    <string name="quit_question">Are you sure you want to exit?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="about">Developed by fpieschaconr</string>
+    <string name="tictactoe_game">Tic Tac Toe Game, 3 difficulties \n Get 3 in a row to win!</string>
 </resources>

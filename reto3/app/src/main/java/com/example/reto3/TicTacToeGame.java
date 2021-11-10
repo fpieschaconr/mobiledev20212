@@ -1,5 +1,7 @@
 package com.example.reto3;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class TicTacToeGame {
@@ -12,6 +14,39 @@ public class TicTacToeGame {
     private char[] mBoard = {OPEN_SPOT, OPEN_SPOT, OPEN_SPOT, OPEN_SPOT, OPEN_SPOT, OPEN_SPOT, OPEN_SPOT, OPEN_SPOT, OPEN_SPOT};
     public static final int BOARD_SIZE = 9;
 
+    // The computer's difficulty levels
+    public enum DifficultyLevel {
+        Easy(0), Harder(1), Expert(2);
+
+
+        private static final Map<Integer, DifficultyLevel> map = new HashMap<>(values().length, 1);
+
+        static {
+            for (DifficultyLevel c : values()) map.put(c.value, c);
+        }
+
+        private final int value;
+
+        private DifficultyLevel(int value) {
+            this.value = value;
+        }
+
+        public static DifficultyLevel of(int value) {
+            DifficultyLevel result = map.get(value);
+            if (result == null) {
+                throw new IllegalArgumentException("Invalid index: " + value);
+            }
+            return result;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+    };
+    // Current difficulty level
+    private DifficultyLevel mDifficultyLevel = DifficultyLevel.Expert;
+
     private Random mRand;
 
     public TicTacToeGame() {
@@ -19,6 +54,14 @@ public class TicTacToeGame {
         // Seed the random number generator
         mRand = new Random();
 
+    }
+
+    public DifficultyLevel getDifficultyLevel() {
+        return mDifficultyLevel;
+    }
+
+    public void setDifficultyLevel(DifficultyLevel difficultyLevel) {
+        mDifficultyLevel = difficultyLevel;
     }
 
     public boolean firstTurn(){
@@ -42,8 +85,19 @@ public class TicTacToeGame {
      * to actually make the computer move to that location.
      * @return The best move for the computer to make (0-8).
      */
-    public int getComputerMove(){
-        int move;
+    public int getRandomMove(){
+        int move = -1;
+
+        // Generate random move
+        do
+        {
+            move = mRand.nextInt(BOARD_SIZE);
+        } while (mBoard[move] == HUMAN_PLAYER || mBoard[move] == COMPUTER_PLAYER);
+
+        return move;
+    }
+    public int getWinningMove(){
+        int move = -1;
 
         // First see if there's a move O can make to win
         for (int i = 0; i < BOARD_SIZE; i++) {
@@ -58,6 +112,11 @@ public class TicTacToeGame {
             }
         }
 
+        return move;
+    }
+    public int getBlockingMove(){
+        int move = -1;
+
         // See if there's a move O can make to block X from winning
         for (int i = 0; i < BOARD_SIZE; i++) {
             if (mBoard[i] != HUMAN_PLAYER && mBoard[i] != COMPUTER_PLAYER) {
@@ -71,12 +130,27 @@ public class TicTacToeGame {
             }
         }
 
-        // Generate random move
-        do
-        {
-            move = mRand.nextInt(BOARD_SIZE);
-        } while (mBoard[move] == HUMAN_PLAYER || mBoard[move] == COMPUTER_PLAYER);
+        return move;
+    }
 
+    public int getComputerMove(){
+        int move = -1;
+        if (mDifficultyLevel == DifficultyLevel.Easy)
+            move = getRandomMove();
+        else if (mDifficultyLevel == DifficultyLevel.Harder) {
+            move = getWinningMove();
+            if (move == -1)
+                move = getRandomMove();
+        }
+        else if (mDifficultyLevel == DifficultyLevel.Expert) {
+// Try to win, but if that's not possible, block.
+// If that's not possible, move anywhere.
+            move = getWinningMove();
+            if (move == -1)
+                move = getBlockingMove();
+            if (move == -1)
+                move = getRandomMove();
+        }
         return move;
     }
     /**
