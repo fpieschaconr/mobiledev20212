@@ -27,7 +27,7 @@ public class TicTacToeGame {
 
         private final int value;
 
-        private DifficultyLevel(int value) {
+        DifficultyLevel(int value) {
             this.value = value;
         }
 
@@ -43,7 +43,7 @@ public class TicTacToeGame {
             return value;
         }
 
-    };
+    }
     // Current difficulty level
     private DifficultyLevel mDifficultyLevel = DifficultyLevel.Expert;
 
@@ -78,15 +78,19 @@ public class TicTacToeGame {
      * @param player - The HUMAN_PLAYER or COMPUTER_PLAYER
      * @param location - The location (0-8) to place the move
      */
-    public void setMove(char player, int location){
-        mBoard[location] = player;
+    public boolean setMove(char player, int location){
+        if (mBoard[location]==OPEN_SPOT){
+            mBoard[location] = player;
+            return true;
+        }
+        return false;
     }
     /** Return the best move for the computer to make. You must call setMove()
      * to actually make the computer move to that location.
      * @return The best move for the computer to make (0-8).
      */
     public int getRandomMove(){
-        int move = -1;
+        int move;
 
         // Generate random move
         do
@@ -208,6 +212,10 @@ public class TicTacToeGame {
 
         // If we make it through the previous loop, all places are taken, so it's a tie
         return 1;
+    }
+
+    public char getBoardOccupant(int i){
+        return mBoard[i];
     }
 
 }
