@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -51,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean playerTurn;
 
+    private SharedPreferences mPrefs;
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -71,13 +74,15 @@ public class MainActivity extends AppCompatActivity {
             case R.id.about:
                 createdDialog(DIALOG_ABOUT_ID).show();
                 return true;
-            case R.id.quit:
-                createdDialog(DIALOG_QUIT_ID).show();
+            case R.id.reset:
+                won = 0;
+                lost = 0;
+                tied = 0;
+                displayScores();
                 return true;
         }
         return false;
     }
-
 
     protected Dialog createdDialog(int id) {
         Dialog dialog = null;
@@ -108,18 +113,6 @@ public class MainActivity extends AppCompatActivity {
                 dialog = builder.create();
                 break;
 
-            case DIALOG_QUIT_ID:
-// Create the quit confirmation dialog
-                builder.setMessage(R.string.quit_question)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                MainActivity.this.finish();
-                            }
-                        })
-                        .setNegativeButton(R.string.no, null);
-                dialog = builder.create();
-                break;
             case DIALOG_ABOUT_ID:
                 Context context = getApplicationContext();
                 LayoutInflater inflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -135,20 +128,50 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mPrefs = getSharedPreferences("ttt_prefs", MODE_PRIVATE);
+        // Restore the scores
+        won = mPrefs.getInt("won", 0);
+        lost = mPrefs.getInt("lost", 0);
+        tied = mPrefs.getInt("tied", 0);
         setContentView(R.layout.activity_main);
         mInfoTextView = (TextView) findViewById(R.id.information);
         mWonTextView = (TextView) findViewById(R.id.won);
         mTiedTextView = (TextView) findViewById(R.id.tied);
         mLostTextView = (TextView) findViewById(R.id.lost);
-        won = 0;
-        tied = 0;
-        lost = 0;
         mGame = new TicTacToeGame();
         mBoardView = (BoardView) findViewById(R.id.board);
         mBoardView.setGame(mGame);
+        mGame.setDifficultyLevel(TicTacToeGame.DifficultyLevel.of(mPrefs.getInt("difficulty", 0)));
         // Listen for touches on the board
         mBoardView.setOnTouchListener(mTouchListener);
-        startNewGame();
+        if (savedInstanceState == null) {
+            startNewGame();
+        }
+        displayScores();
+    }
+
+    private void displayScores() {
+        mWonTextView.setText(getString(R.string.counter_won, won));
+        mTiedTextView.setText(getString(R.string.counter_tied, tied));
+        mLostTextView.setText(getString(R.string.counter_lost, lost));
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mGame.setBoardState(savedInstanceState.getCharArray("board"));
+        mGameOver = savedInstanceState.getBoolean("mGameOver");
+        mInfoTextView.setText(savedInstanceState.getCharSequence("info"));
+        playerTurn = savedInstanceState.getBoolean("playerTurn");
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putCharArray("board", mGame.getBoardState());
+        outState.putBoolean("mGameOver", mGameOver);
+        outState.putCharSequence("info", mInfoTextView.getText());
+        outState.putBoolean("playerTurn", playerTurn);
     }
 
     // Set up the game board.
@@ -156,9 +179,7 @@ public class MainActivity extends AppCompatActivity {
         mGame.clearBoard();
         mBoardView.invalidate(); // Redraw the board
 
-        mWonTextView.setText(getString(R.string.counter_won, won));
-        mTiedTextView.setText(getString(R.string.counter_tied, tied));
-        mLostTextView.setText(getString(R.string.counter_lost, lost));
+        displayScores();
 
         mGameOver = false;
 
@@ -175,9 +196,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean setMove(char player, int location) {
         if (mGame.setMove(player, location)) {
             if (player == TicTacToeGame.HUMAN_PLAYER) {
-                mHumanMediaPlayer.start(); // Play the sound effect
+                if(mHumanMediaPlayer!=null) mHumanMediaPlayer.start(); // Play the sound effect
             } else {
-                mComputerMediaPlayer.start(); // Play the sound effect
+                if(mComputerMediaPlayer!=null) mComputerMediaPlayer.start(); // Play the sound effect
             }
             mBoardView.invalidate(); // Redraw the board
             return true;
@@ -241,14 +262,24 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         mHumanMediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.human);
         mComputerMediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.computer);
-        mHumanMediaPlayer.setPlaybackParams(mHumanMediaPlayer.getPlaybackParams().setSpeed(4.5f));
-        mComputerMediaPlayer.setPlaybackParams(mComputerMediaPlayer.getPlaybackParams().setSpeed(2.5f));
     }
     @Override
     protected void onPause() {
         super.onPause();
         mHumanMediaPlayer.release();
         mComputerMediaPlayer.release();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+// Save the current scores
+        SharedPreferences.Editor ed = mPrefs.edit();
+        ed.putInt("won", won);
+        ed.putInt("lost", lost);
+        ed.putInt("tied", tied);
+        ed.putInt("difficulty", mGame.getDifficultyLevel().getValue());
+        ed.commit();
     }
 
 }

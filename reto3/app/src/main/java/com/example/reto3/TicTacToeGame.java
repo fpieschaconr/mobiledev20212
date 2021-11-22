@@ -218,4 +218,12 @@ public class TicTacToeGame {
         return mBoard[i];
     }
 
+    public char[] getBoardState() {
+        return mBoard;
+    }
+
+    public void setBoardState(char[] mBoard) {
+        this.mBoard = mBoard;
+    }
+
 }
