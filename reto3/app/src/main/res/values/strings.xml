@@ -2,6 +2,7 @@
     <string name="app_name">Reto 4</string>
     <string name="first_human">You go first.</string>
     <string name="turn_human">Your turn.</string>
+    <string name="turn_remote">Player 2\'s turn.</string>
     <string name="turn_computer">Android\'s turn.</string>
     <string name="result_tie">It\'s a tie.</string>
     <string name="result_human_wins">You won!</string>
@@ -18,4 +19,12 @@
     <string name="no">No</string>
     <string name="about">Developed by fpieschaconr</string>
     <string name="tictactoe_game">Tic Tac Toe Game, 3 difficulties \n Get 3 in a row to win!</string>
+    <string name="tic_tac_toe_game">Tic Tac Toe Online Game</string>
+    <string name="online">Online</string>
+    <string name="online_or_offline">Online or Offline</string>
+    <string name="offline">Offline</string>
+    <string name="enter_code">Enter Code</string>
+    <string name="create">Create</string>
+    <string name="join">Join</string>
+    <string name="reset">Reset</string>
 </resources>

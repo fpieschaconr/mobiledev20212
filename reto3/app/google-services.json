@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "189752919720",
+    "project_id": "dadm-triqui",
+    "storage_bucket": "dadm-triqui.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:189752919720:android:480ce25cf3b7a8fecce49d",
+        "android_client_info": {
+          "package_name": "com.example.reto3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "189752919720-kvqeo72dsof9mmjmt7bob4eko9nsb02u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9BgfAcyYleyo1P8KywBhFV4Yg3PdAxP4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "189752919720-kvqeo72dsof9mmjmt7bob4eko9nsb02u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

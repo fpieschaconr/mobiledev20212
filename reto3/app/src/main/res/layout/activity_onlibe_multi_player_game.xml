@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center_horizontal" >
+    <com.example.reto3.BoardView
+        android:id="@+id/board"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_marginTop="20dp"/>
+    <TextView android:id="@+id/information" android:layout_width="fill_parent"
+        android:layout_height="wrap_content" android:text="info"
+        android:gravity="center_horizontal" android:layout_marginTop="20dp"
+        android:textSize="20sp" />
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center_horizontal">
+        <TextView android:id="@+id/won" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="won"
+            android:gravity="center_horizontal"
+            android:textSize="20sp" android:paddingHorizontal="10dp"/>
+        <TextView android:id="@+id/tied" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="tied"
+            android:gravity="center_horizontal" android:layout_toEndOf="@+id/won"
+            android:textSize="20sp" android:paddingHorizontal="10dp"/>
+        <TextView android:id="@+id/lost" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="lost"
+            android:gravity="center_horizontal" android:layout_toEndOf="@+id/tied"
+            android:textSize="20sp" android:paddingHorizontal="10dp"/>
+    </RelativeLayout>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/reset"
+        android:textAllCaps="false"
+        android:id="@+id/idBtnReset"
+        android:layout_marginTop="30dp"
+        />
+
+</LinearLayout>

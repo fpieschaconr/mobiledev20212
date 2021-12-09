@@ -1,11 +1,20 @@
 package com.example.reto3;
 
+import static com.example.reto3.OnlineCodeGeneratorActivity.code;
+import static com.example.reto3.OnlineCodeGeneratorActivity.isCodeMaker;
+import static com.example.reto3.OnlineCodeGeneratorActivity.keyValue;
+
+import static java.lang.System.exit;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -20,13 +29,18 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
 
-    static boolean singlePlayer = false;
+import java.util.ArrayList;
 
-    static final int DIALOG_DIFFICULTY_ID = 0;
-    static final int DIALOG_QUIT_ID = 1;
-    static final int DIALOG_ABOUT_ID = 2;
+public class OnlibeMultiPlayerGameActivity extends AppCompatActivity {
+
+    private boolean isMyMove = isCodeMaker;
+
+    private Button resetBtn;
 
     // Represents the internal state of the game
     private TicTacToeGame mGame;
@@ -53,102 +67,139 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean playerTurn;
 
-    private SharedPreferences mPrefs;
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.options_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.new_game:
-                startNewGame();
-                return true;
-            case R.id.ai_difficulty:
-                createdDialog(DIALOG_DIFFICULTY_ID).show();
-                return true;
-            case R.id.about:
-                createdDialog(DIALOG_ABOUT_ID).show();
-                return true;
-            case R.id.reset:
-                won = 0;
-                lost = 0;
-                tied = 0;
-                displayScores();
-                return true;
-        }
-        return false;
-    }
-
-    protected Dialog createdDialog(int id) {
-        Dialog dialog = null;
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        switch(id) {
-            case DIALOG_DIFFICULTY_ID:
-                builder.setTitle(R.string.difficulty_choose);
-                final CharSequence[] levels = {
-                        getResources().getString(R.string.difficulty_easy),
-                        getResources().getString(R.string.difficulty_harder),
-                        getResources().getString(R.string.difficulty_expert)};
-// TODO: Set selected, an integer (0 to n-1), for the Difficulty dialog.
-// selected is the radio button that should be selected.
-                int selected = mGame.getDifficultyLevel().getValue();
-                builder.setSingleChoiceItems(levels, selected,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int item) {
-                                dialog.dismiss(); // Close dialog
-// TODO: Set the diff level of mGame based on which item was selected.
-// Display the selected difficulty level
-                                mGame.setDifficultyLevel(TicTacToeGame.DifficultyLevel.of(item));
-                                Toast.makeText(getApplicationContext(), levels[item],
-
-                                        Toast.LENGTH_SHORT).show();
-
-                            }
-                        });
-                dialog = builder.create();
-                break;
-
-            case DIALOG_ABOUT_ID:
-                Context context = getApplicationContext();
-                LayoutInflater inflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
-                View layout = inflater.inflate(R.layout.about_dialog, null);
-                builder.setView(layout);
-                builder.setPositiveButton("OK", null);
-                dialog = builder.create();
-                break;
-        }
-        return dialog;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mPrefs = getSharedPreferences("ttt_prefs", MODE_PRIVATE);
         // Restore the scores
-        won = mPrefs.getInt("won", 0);
-        lost = mPrefs.getInt("lost", 0);
-        tied = mPrefs.getInt("tied", 0);
-        setContentView(R.layout.activity_main);
+        won = 0;
+        lost = 0;
+        tied = 0;
+        setContentView(R.layout.activity_onlibe_multi_player_game);
         mInfoTextView = (TextView) findViewById(R.id.information);
         mWonTextView = (TextView) findViewById(R.id.won);
         mTiedTextView = (TextView) findViewById(R.id.tied);
         mLostTextView = (TextView) findViewById(R.id.lost);
         mGame = new TicTacToeGame();
         mBoardView = (BoardView) findViewById(R.id.board);
+        resetBtn = findViewById(R.id.idBtnReset);
+        resetBtn.setOnClickListener(mResetBtnClickListener);
         mBoardView.setGame(mGame);
-        mGame.setDifficultyLevel(TicTacToeGame.DifficultyLevel.of(mPrefs.getInt("difficulty", 0)));
         // Listen for touches on the board
         mBoardView.setOnTouchListener(mTouchListener);
-        if (savedInstanceState == null) {
-            startNewGame();
-        }
         displayScores();
+
+        FirebaseDatabase.getInstance().getReference().child("data").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                Object data = snapshot.getValue();
+                if (isMyMove){
+                    isMyMove=false;
+                }else{
+                    isMyMove = true;
+                }
+                moveOnline(data.toString(), isMyMove);
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                reset();
+                errorMsg("Game Reset");
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void moveOnline(String data, Boolean isMyMove){
+        if (isMyMove) {
+            setMove(TicTacToeGame.COMPUTER_PLAYER, Integer.parseInt(data));
+
+        }else{
+            setMove(TicTacToeGame.HUMAN_PLAYER, Integer.parseInt(data));
+        }
+
+    }
+
+    private View.OnClickListener mResetBtnClickListener = (event) -> {
+        mGame.clearBoard();
+        mBoardView.invalidate(); // Redraw the board
+
+        displayScores();
+
+        mGameOver = false;
+
+        isMyMove = isCodeMaker;
+        if (isMyMove){
+            FirebaseDatabase.getInstance().getReference().child("data").child(code).removeValue();
+        }
+        playerTurn = isMyMove;
+        if (playerTurn) {
+            mInfoTextView.setText(R.string.turn_human);
+        }else{
+            mInfoTextView.setText(R.string.turn_remote);
+        }
+
+    };
+
+    private void reset (){
+        mGame.clearBoard();
+        mBoardView.invalidate(); // Redraw the board
+
+        displayScores();
+
+        mGameOver = false;
+
+        isMyMove = isCodeMaker;
+        if (isMyMove){
+            FirebaseDatabase.getInstance().getReference().child("data").child(code).removeValue();
+        }
+        playerTurn = isMyMove;
+        if (playerTurn) {
+            mInfoTextView.setText(R.string.turn_human);
+        }else{
+            mInfoTextView.setText(R.string.turn_remote);
+        }
+    }
+
+    private void removeCode(){
+        if (isCodeMaker){
+            FirebaseDatabase.getInstance().getReference().child("codes").child(keyValue).removeValue();
+        }
+    }
+
+    private void errorMsg(String value){
+        Toast.makeText(this , value  , Toast.LENGTH_SHORT).show();
+    }
+
+    private void disableReset (){
+        resetBtn.setEnabled(false);
+        new Handler().postDelayed(() -> resetBtn.setEnabled(true),2000);
+    }
+
+    @Override
+    public void onBackPressed(){
+        removeCode();
+        if (isCodeMaker){
+            FirebaseDatabase.getInstance().getReference().child("data").child(code).removeValue();
+        }
+        exit(0);
+    }
+
+    private void updateDatabase (int cellId){
+        FirebaseDatabase.getInstance().getReference().child("data").child(code).push().setValue(cellId);
     }
 
     private void displayScores() {
@@ -175,25 +226,6 @@ public class MainActivity extends AppCompatActivity {
         outState.putBoolean("playerTurn", playerTurn);
     }
 
-    // Set up the game board.
-    private void startNewGame() {
-        mGame.clearBoard();
-        mBoardView.invalidate(); // Redraw the board
-
-        displayScores();
-
-        mGameOver = false;
-
-        if(!mGame.firstTurn()) {
-            playerTurn = false;
-            mInfoTextView.setText(R.string.turn_computer);
-            int move = mGame.getComputerMove();
-            setMove(TicTacToeGame.COMPUTER_PLAYER, move);
-        }
-        playerTurn = true;
-        mInfoTextView.setText(R.string.turn_human);
-    } // End of startNewGame
-
     private boolean setMove(char player, int location) {
         if (mGame.setMove(player, location)) {
             if (player == TicTacToeGame.HUMAN_PLAYER) {
@@ -218,12 +250,12 @@ public class MainActivity extends AppCompatActivity {
                 if (!mGameOver && setMove(TicTacToeGame.HUMAN_PLAYER, pos)){
                     // If no winner yet, let the computer make a move
                     playerTurn = false;
-                    mInfoTextView.setText(R.string.turn_computer);
+                    mInfoTextView.setText(R.string.turn_remote);
                     Handler handler = new Handler();
                     handler.postDelayed(() -> {
                         int winner = mGame.checkForWinner();
                         if (winner == 0) {
-                            mInfoTextView.setText(R.string.turn_computer);
+                            mInfoTextView.setText(R.string.turn_remote);
                             int move = mGame.getComputerMove();
                             setMove(TicTacToeGame.COMPUTER_PLAYER, move);
                             winner = mGame.checkForWinner();
@@ -270,17 +302,4 @@ public class MainActivity extends AppCompatActivity {
         mHumanMediaPlayer.release();
         mComputerMediaPlayer.release();
     }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-// Save the current scores
-        SharedPreferences.Editor ed = mPrefs.edit();
-        ed.putInt("won", won);
-        ed.putInt("lost", lost);
-        ed.putInt("tied", tied);
-        ed.putInt("difficulty", mGame.getDifficultyLevel().getValue());
-        ed.commit();
-    }
-
 }
