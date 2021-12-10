@@ -22,8 +22,6 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    static boolean singlePlayer = false;
-
     static final int DIALOG_DIFFICULTY_ID = 0;
     static final int DIALOG_QUIT_ID = 1;
     static final int DIALOG_ABOUT_ID = 2;

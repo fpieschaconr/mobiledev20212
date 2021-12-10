@@ -6,34 +6,41 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class OnlineCodeGeneratorActivity extends AppCompatActivity {
 
-    static boolean isCodeMaker = true;
-    static String code = "null";
-    static boolean codeFound = false;
-    static boolean checkTemp = true;
-    static String keyValue = "null";
+    private boolean isCodeMaker = true;
+    private String code = "null";
+    private boolean codeFound = false;
+    private boolean checkTemp = true;
+    private String keyValue = "null";
 
 
     private TextView headTV;
     private EditText codeEdt;
     private Button createCodeBtn;
-    private Button joinCodeBtn;
     private ProgressBar loadingPB;
+    private ListView gamesLV;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +49,33 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
         headTV = findViewById(R.id.idTVHead);
         codeEdt = findViewById(R.id.idEdtCode);
         createCodeBtn = findViewById(R.id.idBtnCreate);
-        joinCodeBtn = findViewById(R.id.idBtnJoin);
         loadingPB = findViewById(R.id.idPBLoading);
+        gamesLV = findViewById(R.id.idLVGames);
 
         createCodeBtn.setOnClickListener(mCreateBtnClickListener);
-        joinCodeBtn.setOnClickListener(mJoinBtnClickListener);
+        gamesLV.setOnItemClickListener(mJoinGameClickListener);
+
+        List<String> list = new ArrayList<>();
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list);
+        gamesLV.setAdapter(arrayAdapter);
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference codesRef = rootRef.child("codes");
+        ValueEventListener eventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()) {
+                    String code = ds.getValue(String.class);
+                    list.add(code);
+                }
+                arrayAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        codesRef.addListenerForSingleValueEvent(eventListener);
     }
 
     private View.OnClickListener mCreateBtnClickListener = (event) -> {
@@ -58,7 +87,7 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
         code = codeEdt.getText().toString();
 
         createCodeBtn.setVisibility(View.GONE);
-        joinCodeBtn.setVisibility(View.GONE);
+        gamesLV.setVisibility(View.GONE);
         codeEdt.setVisibility(View.GONE);
         headTV.setVisibility(View.GONE);
         loadingPB.setVisibility(View.VISIBLE);
@@ -70,9 +99,9 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     boolean check = isValueAvailable(snapshot, code);
                     new Handler().postDelayed(() -> {
-                        if (check) {
+                        if (!check) {
                             createCodeBtn.setVisibility(View.VISIBLE);
-                            joinCodeBtn.setVisibility(View.VISIBLE);
+                            gamesLV.setVisibility(View.VISIBLE);
                             codeEdt.setVisibility(View.VISIBLE);
                             headTV.setVisibility(View.VISIBLE);
                             loadingPB.setVisibility(View.GONE);
@@ -82,7 +111,7 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
                             checkTemp = false;
                             new Handler().postDelayed(() -> {
                                 accepted();
-                                Toast.makeText(OnlineCodeGeneratorActivity.this,"Please do not go back", Toast.LENGTH_SHORT).show();
+                                errorMsg("Please do not go back");
                             },300);
                         }
                     },2000);
@@ -95,7 +124,7 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
             });
         } else {
             createCodeBtn.setVisibility(View.VISIBLE);
-            joinCodeBtn.setVisibility(View.VISIBLE);
+            gamesLV.setVisibility(View.VISIBLE);
             codeEdt.setVisibility(View.VISIBLE);
             headTV.setVisibility(View.VISIBLE);
             loadingPB.setVisibility(View.GONE);
@@ -103,17 +132,17 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
         }
     };
 
-    private View.OnClickListener mJoinBtnClickListener = (event) -> {
+    private AdapterView.OnItemClickListener mJoinGameClickListener = (adapterView, view1, position, id) -> {
         code = "null";
         codeFound = false;
         checkTemp = true;
         keyValue="null";
 
-        code = codeEdt.getText().toString();
+        code = (String) adapterView.getItemAtPosition(position);
 
         if (!code.equals("null") && !code.equals("")){
             createCodeBtn.setVisibility(View.GONE);
-            joinCodeBtn.setVisibility(View.GONE);
+            gamesLV.setVisibility(View.GONE);
             codeEdt.setVisibility(View.GONE);
             headTV.setVisibility(View.GONE);
             loadingPB.setVisibility(View.VISIBLE);
@@ -123,17 +152,17 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     boolean check = isValueAvailable(snapshot, code);
                     new Handler().postDelayed(() -> {
-                        if (check) {
+                        if (!check) {
                             codeFound = true;
                             accepted();
                             createCodeBtn.setVisibility(View.VISIBLE);
-                            joinCodeBtn.setVisibility(View.VISIBLE);
+                            gamesLV.setVisibility(View.VISIBLE);
                             codeEdt.setVisibility(View.VISIBLE);
                             headTV.setVisibility(View.VISIBLE);
                             loadingPB.setVisibility(View.GONE);
                         }else{
                             createCodeBtn.setVisibility(View.VISIBLE);
-                            joinCodeBtn.setVisibility(View.VISIBLE);
+                            gamesLV.setVisibility(View.VISIBLE);
                             codeEdt.setVisibility(View.VISIBLE);
                             headTV.setVisibility(View.VISIBLE);
                             loadingPB.setVisibility(View.GONE);
@@ -148,17 +177,28 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
                 }
             });
 
-        }else{
-            Toast.makeText(this, "Please enter a valid code",Toast.LENGTH_SHORT).show();
         }
 
     };
 
     private void accepted (){
         Intent intent = new Intent(this, OnlibeMultiPlayerGameActivity.class);
+        //Create the bundle
+        Bundle bundle = new Bundle();
+
+//Add your data to bundle
+        bundle.putBoolean("isCodeMaker", isCodeMaker);
+        bundle.putString("code", code);
+        bundle.putBoolean("codeFound", codeFound);
+        bundle.putBoolean("checkTemp", checkTemp);
+        bundle.putString("keyValue", keyValue);
+
+
+//Add the bundle to the intent
+        intent.putExtras(bundle);
         startActivity(intent);
         createCodeBtn.setVisibility(View.VISIBLE);
-        joinCodeBtn.setVisibility(View.VISIBLE);
+        gamesLV.setVisibility(View.VISIBLE);
         codeEdt.setVisibility(View.VISIBLE);
         headTV.setVisibility(View.VISIBLE);
         loadingPB.setVisibility(View.GONE);
@@ -173,7 +213,11 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
                 found.set(true);
             }
         });
-        if (found.get()) return true;
-        return false;
+        if (found.get()) return false;
+        return true;
+    }
+
+    private void errorMsg(String value){
+        Toast.makeText(this , value  , Toast.LENGTH_SHORT).show();
     }
 }

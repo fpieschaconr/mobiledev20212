@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Reto 4</string>
+    <string name="app_name">Reto 7</string>
     <string name="first_human">You go first.</string>
     <string name="turn_human">Your turn.</string>
     <string name="turn_remote">Player 2\'s turn.</string>
@@ -7,6 +7,7 @@
     <string name="result_tie">It\'s a tie.</string>
     <string name="result_human_wins">You won!</string>
     <string name="result_computer_wins">Android won!</string>
+    <string name="result_remote_wins">Player 2 won!</string>
     <string name="counter_won">Human: %1$d</string>
     <string name="counter_tied">Tied: %1$d</string>
     <string name="counter_lost">Android: %1$d</string>
@@ -27,4 +28,5 @@
     <string name="create">Create</string>
     <string name="join">Join</string>
     <string name="reset">Reset</string>
+    <string name="available_rooms">Available Rooms</string>
 </resources>

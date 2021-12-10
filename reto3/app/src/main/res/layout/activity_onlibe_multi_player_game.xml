@@ -4,6 +4,10 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:gravity="center_horizontal" >
+    <TextView android:id="@+id/idTVRoom" android:layout_width="fill_parent"
+        android:layout_height="wrap_content" android:text="RoomID"
+        android:gravity="center_horizontal" android:layout_marginTop="20dp"
+        android:textSize="20sp" />
     <com.example.reto3.BoardView
         android:id="@+id/board"
         android:layout_width="300dp"
@@ -13,24 +17,6 @@
         android:layout_height="wrap_content" android:text="info"
         android:gravity="center_horizontal" android:layout_marginTop="20dp"
         android:textSize="20sp" />
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:gravity="center_horizontal">
-        <TextView android:id="@+id/won" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:text="won"
-            android:gravity="center_horizontal"
-            android:textSize="20sp" android:paddingHorizontal="10dp"/>
-        <TextView android:id="@+id/tied" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:text="tied"
-            android:gravity="center_horizontal" android:layout_toEndOf="@+id/won"
-            android:textSize="20sp" android:paddingHorizontal="10dp"/>
-        <TextView android:id="@+id/lost" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:text="lost"
-            android:gravity="center_horizontal" android:layout_toEndOf="@+id/tied"
-            android:textSize="20sp" android:paddingHorizontal="10dp"/>
-    </RelativeLayout>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

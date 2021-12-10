@@ -22,13 +22,11 @@ public class MultiPlayerGameSelectionActivity extends AppCompatActivity {
     }
 
     private View.OnClickListener mOnlineBtnClickListener = (event) -> {
-        MainActivity.singlePlayer = false;
         Intent intent = new Intent(this, OnlineCodeGeneratorActivity.class);
         startActivity(intent);
     };
 
     private View.OnClickListener mOfflineBtnClickListener = (event) -> {
-        MainActivity.singlePlayer = true;
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     };

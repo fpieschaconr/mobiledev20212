@@ -1,8 +1,6 @@
 package com.example.reto3;
 
-import static com.example.reto3.OnlineCodeGeneratorActivity.code;
-import static com.example.reto3.OnlineCodeGeneratorActivity.isCodeMaker;
-import static com.example.reto3.OnlineCodeGeneratorActivity.keyValue;
+import static com.example.reto3.TicTacToeGame.OPEN_SPOT;
 
 import static java.lang.System.exit;
 
@@ -11,18 +9,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -34,9 +24,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.ArrayList;
+import java.util.Map;
 
 public class OnlibeMultiPlayerGameActivity extends AppCompatActivity {
+
+    private boolean isCodeMaker = true;
+    private String code = "null";
+    private String keyValue = "null";
 
     private boolean isMyMove = isCodeMaker;
 
@@ -51,53 +45,58 @@ public class OnlibeMultiPlayerGameActivity extends AppCompatActivity {
     private Button[] mBoardButtons;
     // Various text displayed
     private TextView mInfoTextView;
+    private TextView mRoom;
 
-    private TextView mWonTextView;
-    private TextView mTiedTextView;
-    private TextView mLostTextView;
-
-    private int won;
-    private int tied;
-    private int lost;
 
     private boolean mGameOver;
 
     MediaPlayer mHumanMediaPlayer;
     MediaPlayer mComputerMediaPlayer;
 
-    private boolean playerTurn;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Restore the scores
-        won = 0;
-        lost = 0;
-        tied = 0;
         setContentView(R.layout.activity_onlibe_multi_player_game);
-        mInfoTextView = (TextView) findViewById(R.id.information);
-        mWonTextView = (TextView) findViewById(R.id.won);
-        mTiedTextView = (TextView) findViewById(R.id.tied);
-        mLostTextView = (TextView) findViewById(R.id.lost);
+        //Get the bundle
+        Bundle bundle = getIntent().getExtras();
+
+//Extract the data…
+        isCodeMaker = bundle.getBoolean("isCodeMaker");
+        code = bundle.getString("code");
+        keyValue = bundle.getString("keyValue");
+
+        isMyMove = isCodeMaker;
+
+        mInfoTextView = findViewById(R.id.information);
+        if (isMyMove) {
+            mInfoTextView.setText(R.string.turn_human);
+        }else{
+            mInfoTextView.setText(R.string.turn_remote);
+        }
+        mRoom = findViewById(R.id.idTVRoom);
+        String room = "Room ID: " + code;
+        mRoom.setText(room);
         mGame = new TicTacToeGame();
-        mBoardView = (BoardView) findViewById(R.id.board);
+        mBoardView = findViewById(R.id.board);
         resetBtn = findViewById(R.id.idBtnReset);
         resetBtn.setOnClickListener(mResetBtnClickListener);
         mBoardView.setGame(mGame);
         // Listen for touches on the board
         mBoardView.setOnTouchListener(mTouchListener);
-        displayScores();
 
-        FirebaseDatabase.getInstance().getReference().child("data").addChildEventListener(new ChildEventListener() {
+        mGameOver = false;
+
+        FirebaseDatabase.getInstance().getReference().child("data").child(code).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                Object data = snapshot.getValue();
-                if (isMyMove){
-                    isMyMove=false;
+                Object data =  snapshot.getValue();
+                isMyMove= !isMyMove;
+                if (isMyMove) {
+                    mInfoTextView.setText(R.string.turn_human);
                 }else{
-                    isMyMove = true;
+                    mInfoTextView.setText(R.string.turn_remote);
                 }
-                moveOnline(data.toString(), isMyMove);
+                moveOnline(Integer.parseInt(data.toString()), isMyMove);
             }
 
             @Override
@@ -123,51 +122,29 @@ public class OnlibeMultiPlayerGameActivity extends AppCompatActivity {
         });
     }
 
-    private void moveOnline(String data, Boolean isMyMove){
+    private void moveOnline(int data, Boolean isMyMove){
         if (isMyMove) {
-            setMove(TicTacToeGame.COMPUTER_PLAYER, Integer.parseInt(data));
+            setMove(TicTacToeGame.COMPUTER_PLAYER, data);
 
         }else{
-            setMove(TicTacToeGame.HUMAN_PLAYER, Integer.parseInt(data));
+            setMove(TicTacToeGame.HUMAN_PLAYER, data);
         }
 
     }
 
     private View.OnClickListener mResetBtnClickListener = (event) -> {
-        mGame.clearBoard();
-        mBoardView.invalidate(); // Redraw the board
-
-        displayScores();
-
-        mGameOver = false;
-
-        isMyMove = isCodeMaker;
-        if (isMyMove){
-            FirebaseDatabase.getInstance().getReference().child("data").child(code).removeValue();
-        }
-        playerTurn = isMyMove;
-        if (playerTurn) {
-            mInfoTextView.setText(R.string.turn_human);
-        }else{
-            mInfoTextView.setText(R.string.turn_remote);
-        }
-
+        reset();
     };
 
     private void reset (){
         mGame.clearBoard();
         mBoardView.invalidate(); // Redraw the board
 
-        displayScores();
-
         mGameOver = false;
 
         isMyMove = isCodeMaker;
-        if (isMyMove){
+        if (isMyMove) {
             FirebaseDatabase.getInstance().getReference().child("data").child(code).removeValue();
-        }
-        playerTurn = isMyMove;
-        if (playerTurn) {
             mInfoTextView.setText(R.string.turn_human);
         }else{
             mInfoTextView.setText(R.string.turn_remote);
@@ -202,19 +179,13 @@ public class OnlibeMultiPlayerGameActivity extends AppCompatActivity {
         FirebaseDatabase.getInstance().getReference().child("data").child(code).push().setValue(cellId);
     }
 
-    private void displayScores() {
-        mWonTextView.setText(getString(R.string.counter_won, won));
-        mTiedTextView.setText(getString(R.string.counter_tied, tied));
-        mLostTextView.setText(getString(R.string.counter_lost, lost));
-    }
-
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         mGame.setBoardState(savedInstanceState.getCharArray("board"));
         mGameOver = savedInstanceState.getBoolean("mGameOver");
         mInfoTextView.setText(savedInstanceState.getCharSequence("info"));
-        playerTurn = savedInstanceState.getBoolean("playerTurn");
+        isMyMove = savedInstanceState.getBoolean("isMyMove");
     }
 
     @Override
@@ -223,7 +194,7 @@ public class OnlibeMultiPlayerGameActivity extends AppCompatActivity {
         outState.putCharArray("board", mGame.getBoardState());
         outState.putBoolean("mGameOver", mGameOver);
         outState.putCharSequence("info", mInfoTextView.getText());
-        outState.putBoolean("playerTurn", playerTurn);
+        outState.putBoolean("isMyMove", isMyMove);
     }
 
     private boolean setMove(char player, int location) {
@@ -234,6 +205,19 @@ public class OnlibeMultiPlayerGameActivity extends AppCompatActivity {
                 if(mComputerMediaPlayer!=null) mComputerMediaPlayer.start(); // Play the sound effect
             }
             mBoardView.invalidate(); // Redraw the board
+            int winner = mGame.checkForWinner();
+            if (winner == 1){
+                mInfoTextView.setText(R.string.result_tie);
+                mGameOver = true;
+            }
+            else if (winner == 2){
+                mInfoTextView.setText(R.string.result_human_wins);
+                mGameOver = true;
+            }
+            else if (winner == 3){
+                mInfoTextView.setText(R.string.result_remote_wins);
+                mGameOver = true;
+            }
             return true;
         }
         return false;
@@ -246,43 +230,9 @@ public class OnlibeMultiPlayerGameActivity extends AppCompatActivity {
             int col = (int) event.getX() / mBoardView.getBoardCellWidth();
             int row = (int) event.getY() / mBoardView.getBoardCellHeight();
             int pos = row * 3 + col;
-            if (playerTurn){
-                if (!mGameOver && setMove(TicTacToeGame.HUMAN_PLAYER, pos)){
-                    // If no winner yet, let the computer make a move
-                    playerTurn = false;
-                    mInfoTextView.setText(R.string.turn_remote);
-                    Handler handler = new Handler();
-                    handler.postDelayed(() -> {
-                        int winner = mGame.checkForWinner();
-                        if (winner == 0) {
-                            mInfoTextView.setText(R.string.turn_remote);
-                            int move = mGame.getComputerMove();
-                            setMove(TicTacToeGame.COMPUTER_PLAYER, move);
-                            winner = mGame.checkForWinner();
-                        }
-                        if (winner == 0){
-                            playerTurn = true;
-                            mInfoTextView.setText(R.string.turn_human);}
-                        else if (winner == 1){
-                            mInfoTextView.setText(R.string.result_tie);
-                            tied++;
-                            mTiedTextView.setText(getString(R.string.counter_tied, tied));
-                            mGameOver = true;
-                        }
-                        else if (winner == 2){
-                            mInfoTextView.setText(R.string.result_human_wins);
-                            won++;
-                            mWonTextView.setText(getString(R.string.counter_won, won));
-                            mGameOver = true;
-                        }
-                        else{
-                            mInfoTextView.setText(R.string.result_computer_wins);
-                            lost++;
-                            mLostTextView.setText(getString(R.string.counter_lost, lost));
-                            mGameOver = true;
-                        }
-                    }, 1000);
-
+            if (isMyMove && !mGameOver){
+                if (mGame.getBoardOccupant(pos)==OPEN_SPOT){
+                    updateDatabase(pos);
                 }
             }
 // So we aren't notified of continued events when finger is moved
