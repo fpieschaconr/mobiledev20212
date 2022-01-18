@@ -186,7 +186,7 @@ export class HomePage {
       } else {
         query += ` WHERE`;
       }
-      query += ` Classification = LIKE '%${this.searchClassification}%'`;
+      query += ` Classification LIKE '%${this.searchClassification}%'`;
     }
     this.databaseObj
       .executeSql(query, [])
