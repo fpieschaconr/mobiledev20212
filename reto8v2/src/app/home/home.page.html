@@ -120,6 +120,7 @@
               <ion-select
                 placeholder="Enter Classification"
                 (ionChange)="model.Classification = $event.target.value"
+                [value]="model.Classification"
               >
                 <ion-select-option
                   *ngFor="let class of classifications"
@@ -212,10 +213,20 @@
           </ion-row>
           <ion-row>
             <ion-col> Url: {{model.Url}} </ion-col>
+          </ion-row>
+          <ion-row>
             <ion-col> Telephone: {{model.Telephone}} </ion-col>
+          </ion-row>
+          <ion-row>
             <ion-col> Email: {{model.Email}} </ion-col>
+          </ion-row>
+          <ion-row>
             <ion-col> Products: {{model.Products}} </ion-col>
+          </ion-row>
+          <ion-row>
             <ion-col> Classification: {{model.Classification}} </ion-col>
+          </ion-row>
+          <ion-row>
             <ion-col>
               <ion-button (click)="showDetailsItem=false" size="small">
                 Confirm
