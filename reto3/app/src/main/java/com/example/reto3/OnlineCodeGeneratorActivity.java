@@ -41,6 +41,8 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
     private Button createCodeBtn;
     private ProgressBar loadingPB;
     private ListView gamesLV;
+    private TextView roomListTV;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +53,7 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
         createCodeBtn = findViewById(R.id.idBtnCreate);
         loadingPB = findViewById(R.id.idPBLoading);
         gamesLV = findViewById(R.id.idLVGames);
+        roomListTV = findViewById(R.id.idTVRoomList);
 
         createCodeBtn.setOnClickListener(mCreateBtnClickListener);
         gamesLV.setOnItemClickListener(mJoinGameClickListener);
@@ -90,6 +93,7 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
         gamesLV.setVisibility(View.GONE);
         codeEdt.setVisibility(View.GONE);
         headTV.setVisibility(View.GONE);
+        roomListTV.setVisibility(View.GONE);
         loadingPB.setVisibility(View.VISIBLE);
 
         if (!code.equals("null") && !code.equals("")){
@@ -104,6 +108,7 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
                             gamesLV.setVisibility(View.VISIBLE);
                             codeEdt.setVisibility(View.VISIBLE);
                             headTV.setVisibility(View.VISIBLE);
+                            roomListTV.setVisibility(View.VISIBLE);
                             loadingPB.setVisibility(View.GONE);
                         }else{
                             FirebaseDatabase.getInstance().getReference().child("codes").push().setValue(code);
@@ -127,6 +132,7 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
             gamesLV.setVisibility(View.VISIBLE);
             codeEdt.setVisibility(View.VISIBLE);
             headTV.setVisibility(View.VISIBLE);
+            roomListTV.setVisibility(View.VISIBLE);
             loadingPB.setVisibility(View.GONE);
             Toast.makeText(this, "Please enter a valid code",Toast.LENGTH_SHORT).show();
         }
@@ -145,6 +151,7 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
             gamesLV.setVisibility(View.GONE);
             codeEdt.setVisibility(View.GONE);
             headTV.setVisibility(View.GONE);
+            roomListTV.setVisibility(View.GONE);
             loadingPB.setVisibility(View.VISIBLE);
             isCodeMaker=false;
             FirebaseDatabase.getInstance().getReference().child("codes").addValueEventListener(new ValueEventListener() {
@@ -159,12 +166,14 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
                             gamesLV.setVisibility(View.VISIBLE);
                             codeEdt.setVisibility(View.VISIBLE);
                             headTV.setVisibility(View.VISIBLE);
+                            roomListTV.setVisibility(View.VISIBLE);
                             loadingPB.setVisibility(View.GONE);
                         }else{
                             createCodeBtn.setVisibility(View.VISIBLE);
                             gamesLV.setVisibility(View.VISIBLE);
                             codeEdt.setVisibility(View.VISIBLE);
                             headTV.setVisibility(View.VISIBLE);
+                            roomListTV.setVisibility(View.VISIBLE);
                             loadingPB.setVisibility(View.GONE);
                             Toast.makeText(OnlineCodeGeneratorActivity.this,"Invalid code", Toast.LENGTH_SHORT).show();
                         }
@@ -201,6 +210,7 @@ public class OnlineCodeGeneratorActivity extends AppCompatActivity {
         gamesLV.setVisibility(View.VISIBLE);
         codeEdt.setVisibility(View.VISIBLE);
         headTV.setVisibility(View.VISIBLE);
+        roomListTV.setVisibility(View.VISIBLE);
         loadingPB.setVisibility(View.GONE);
     }
 

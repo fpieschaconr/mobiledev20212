@@ -1,0 +1,229 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title> Reto 8 </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding text-center>
+  <ion-input placeholder="Enter Name" [(ngModel)]="searchName"></ion-input>
+
+  <ion-select
+    placeholder="Enter Classification"
+    (ionChange)="searchClassification = $event.target.value"
+  >
+    <ion-select-option
+      *ngFor="let class of classificationsSearch"
+      [value]="class"
+      >{{class}}</ion-select-option
+    >
+  </ion-select>
+
+  <ion-button expand="block" (click)="getRows()"> Search </ion-button>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col> Name </ion-col>
+      <!-- <ion-col> URL </ion-col>
+      <ion-col> Telephone </ion-col>
+      <ion-col> Email </ion-col>
+      <ion-col> Products </ion-col> -->
+      <ion-col> Classification </ion-col>
+      <ion-col> Options </ion-col>
+    </ion-row>
+    <ion-row *ngFor="let item of row_data">
+      <ion-col>
+        <ion-button expand="full" fill="outline" (click)="viewDetails(item)"
+          >{{item.Name}}</ion-button
+        >
+      </ion-col>
+      <!-- <ion-col> {{item.Url}} </ion-col>
+      <ion-col> {{item.Telephone}} </ion-col>
+      <ion-col> {{item.Email}} </ion-col>
+      <ion-col> {{item.Products}} </ion-col> -->
+      <ion-col> {{item.Classification}} </ion-col>
+      <ion-col>
+        <ion-button (click)="confirmDelete(item)" size="small" color="danger">
+          <ion-icon name="trash"></ion-icon>
+        </ion-button>
+        <ion-button (click)="enableUpdate(item)" size="small" color="warning">
+          <ion-icon name="create"></ion-icon>
+        </ion-button>
+        <!-- update/delete or confirm/cancel update -->
+        <!-- <ion-button
+          [*ngIf]="item.updateActive"
+          (click)="item.updateActive=false"
+          size="small"
+          color="danger"
+        >
+          <ion-icon name="trash"></ion-icon>
+        </ion-button>
+        <ion-button
+          [*ngIf]="item.updateActive"
+          (click)="updateRow()"
+          size="small"
+          color="warning"
+        >
+          <ion-icon name="checkbox"></ion-icon>
+        </ion-button> -->
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="insertRowModal()">
+      <ion-icon name="add-circle"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-modal [isOpen]="showInsertRowModal">
+    <ng-template>
+      <ion-content>
+        <ion-grid>
+          <ion-col>
+            <ion-row>
+              <ion-input
+                placeholder="Enter Name"
+                [(ngModel)]="model.Name"
+              ></ion-input>
+            </ion-row>
+
+            <ion-row>
+              <ion-input
+                placeholder="Enter URL"
+                [(ngModel)]="model.Url"
+              ></ion-input>
+            </ion-row>
+
+            <ion-row>
+              <ion-input
+                type="number"
+                placeholder="Enter Telephone"
+                [(ngModel)]="model.Telephone"
+              ></ion-input>
+            </ion-row>
+
+            <ion-row>
+              <ion-input
+                placeholder="Enter Email"
+                [(ngModel)]="model.Email"
+              ></ion-input>
+            </ion-row>
+
+            <ion-row>
+              <ion-input
+                placeholder="Enter Products"
+                [(ngModel)]="model.Products"
+              ></ion-input>
+            </ion-row>
+
+            <ion-row>
+              <ion-select
+                placeholder="Enter Classification"
+                (ionChange)="model.Classification = $event.target.value"
+              >
+                <ion-select-option
+                  *ngFor="let class of classifications"
+                  [value]="class"
+                  >{{class}}</ion-select-option
+                >
+              </ion-select>
+            </ion-row>
+            <ion-row>
+              <ion-button
+                *ngIf="!updateActive"
+                (click)="insertRow()"
+                size="small"
+                color="success"
+              >
+                Insert
+              </ion-button>
+              <ion-button
+                *ngIf="updateActive"
+                (click)="updateRow()"
+                size="small"
+                color="success"
+              >
+                Update
+              </ion-button>
+            </ion-row>
+            <ion-row>
+              <ion-button
+                (click)="showInsertRowModal=false; updateActive = false;"
+                size="small"
+                color="warning"
+              >
+                Cancel
+              </ion-button>
+            </ion-row>
+          </ion-col>
+        </ion-grid>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal
+    [isOpen]="confirmDeleteModal"
+    [breakpoints]="[0.1, 0.5, 1]"
+    [initialBreakpoint]="0.5"
+  >
+    <ng-template>
+      <ion-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-title>
+                Are you sure you want to delete this item?
+              </ion-title>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-button (click)="deleteRow()" size="small" color="danger">
+                Confirm
+              </ion-button>
+            </ion-col>
+            <ion-col>
+              <ion-button
+                (click)="confirmDeleteModal=false"
+                size="small"
+                color="warning"
+              >
+                Cancel
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal
+    [isOpen]="showDetailsItem"
+    [breakpoints]="[0.1, 0.5, 1]"
+    [initialBreakpoint]="0.5"
+  >
+    <ng-template>
+      <ion-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-title> {{model.Name}} </ion-title>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col> Url: {{model.Url}} </ion-col>
+            <ion-col> Telephone: {{model.Telephone}} </ion-col>
+            <ion-col> Email: {{model.Email}} </ion-col>
+            <ion-col> Products: {{model.Products}} </ion-col>
+            <ion-col> Classification: {{model.Classification}} </ion-col>
+            <ion-col>
+              <ion-button (click)="showDetailsItem=false" size="small">
+                Confirm
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>
