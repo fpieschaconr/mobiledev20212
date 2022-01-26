@@ -1,0 +1,43 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Reto 10 - Paradas Rutas Alimentadoras - Metro de Medellín
+    </ion-title>
+  </ion-toolbar>
+  <ion-grid>
+    <ion-row>
+      <ion-input
+        [disabled]="isSearching"
+        type="number"
+        placeholder="Codigo Ruta"
+        [(ngModel)]="codigoRuta"
+        maxlength="7"
+        max="9999999"
+        min="0"
+      ></ion-input>
+    </ion-row>
+    <ion-row>
+      <ion-input
+        [disabled]="isSearching"
+        type="text"
+        placeholder="Ruta"
+        [(ngModel)]="ruta"
+        maxlength="50"
+      ></ion-input>
+    </ion-row>
+    <ion-row>
+      <ion-button
+        [disabled]="isSearching"
+        (click)="getData()"
+        size="small"
+        color="success"
+      >
+        Buscar
+      </ion-button>
+    </ion-row>
+  </ion-grid>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div id="mapId" style="width: 100%; height: 100%"></div>
+</ion-content>
